@@ -1,7 +1,6 @@
 package vocaminder
 
 import (
-	"fmt"
 	"html/template"
 	"net/http"
 
@@ -35,13 +34,35 @@ func handleHomePage(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-type", "text/html; charset=utf-8")
 	context := appengine.NewContext(r)
 	u := user.Current(context)
-	if u == nil {
-		url, _ := user.LoginURL(context, "/")
-		fmt.Fprintf(w, `<a href="%s">Sign in or register</a>`, url)
-		return
+
+	loginURL, _ := user.LoginURL(context, "/")
+	logoutURL, _ := user.LogoutURL(context, "/")
+
+	d := struct {
+		Data        interface{}
+		AuthEnabled bool
+		LoginURL    string
+		LogoutURL   string
+	}{
+		Data:        nil,
+		AuthEnabled: u != nil,
+		LoginURL:    loginURL,
+		LogoutURL:   logoutURL,
 	}
-	url, _ := user.LogoutURL(context, "/")
-	fmt.Fprintf(w, `Welcome, %s! (<a href="%s">sign out</a>)`, u, url)
+
+	if err := tpl.ExecuteTemplate(w, "homepage.html", d); err != nil {
+		log.Errorf(context, "%v", err)
+	}
+
+	/*
+		if u == nil {
+			url, _ := user.LoginURL(context, "/")
+			fmt.Fprintf(w, `<a href="%s">Sign in or register</a>`, url)
+			return
+		}
+		url, _ := user.LogoutURL(context, "/")
+	*/
+	//	fmt.Fprintf(w, `Welcome, %s! (<a href="%s">sign out</a>)`, u, url)
 }
 
 func handleNewVocab(w http.ResponseWriter, r *http.Request) {
