@@ -8,6 +8,7 @@ import (
 	"google.golang.org/appengine"
 	"google.golang.org/appengine/datastore"
 	"google.golang.org/appengine/log"
+	"google.golang.org/appengine/user"
 )
 
 // Vocab is a structure for a word
@@ -30,7 +31,17 @@ func init() {
 
 // getHomePage is an HTTP handler that prints "HomePage"
 func handleHomePage(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprint(w, "HomePage")
+
+	w.Header().Set("Content-type", "text/html; charset=utf-8")
+	context := appengine.NewContext(r)
+	u := user.Current(context)
+	if u == nil {
+		url, _ := user.LoginURL(context, "/")
+		fmt.Fprintf(w, `<a href="%s">Sign in or register</a>`, url)
+		return
+	}
+	url, _ := user.LogoutURL(context, "/")
+	fmt.Fprintf(w, `Welcome, %s! (<a href="%s">sign out</a>)`, u, url)
 }
 
 func handleNewVocab(w http.ResponseWriter, r *http.Request) {
