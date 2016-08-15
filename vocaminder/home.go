@@ -49,7 +49,7 @@ func handleNewVocab(w http.ResponseWriter, r *http.Request) {
 	context := appengine.NewContext(r)
 
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
-	if err := tpl.ExecuteTemplate(w, "addvocab.html", nil); err != nil {
+	if err := tpl.ExecuteTemplate(w, "add_vocab.html", nil); err != nil {
 		log.Errorf(context, "%v", err)
 	}
 }
