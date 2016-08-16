@@ -1,8 +1,11 @@
 package vocaminder
 
 import (
+	"fmt"
 	"html/template"
 	"net/http"
+
+	"github.com/gin-gonic/gin"
 
 	"google.golang.org/appengine"
 	"google.golang.org/appengine/datastore"
@@ -22,10 +25,23 @@ var tpl = template.Must(template.ParseGlob("vocaminder/templates/*.html"))
 
 // init is called before the application starts.
 func init() {
-	// Register a handler for / URLs.
-	http.HandleFunc("/", handleHomePage)
-	http.HandleFunc("/add_vocab", handleAddVocab)
-	http.HandleFunc("/new_vocab", handleNewVocab)
+
+	// Starts a new Gin instance with no middle-ware
+	r := gin.New()
+
+	// Define your handlers
+	r.GET("/", func(c *gin.Context) {
+		c.String(200, "Hello World!")
+	})
+	r.GET("/ping", func(c *gin.Context) {
+		c.String(200, "pong")
+	})
+
+	r.GET("/vocab/id/:word", getVocabID)
+	r.GET("/vocab/new", addNewVocab)
+
+	// Handle all requests using net/http
+	http.Handle("/", r)
 }
 
 // getHomePage is an HTTP handler that prints "HomePage"
@@ -75,38 +91,50 @@ func handleNewVocab(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func handlNewVocab(w http.ResponseWriter, r *http.Request) {
+func getVocabID(c *gin.Context) {
+	word := c.Param("word")
 
-	context := appengine.NewContext(r)
+	fmt.Println("word", word)
 
-	w.Header().Set("Content-Type", "text/html; charset=utf-8")
-	if err := tpl.ExecuteTemplate(w, "addvocab.html", nil); err != nil {
+	context := appengine.NewContext(c.Request)
+
+	vocabKey := datastore.NewKey(context, "Vocab", "first", 0, nil)
+
+	var v Vocab
+
+	err := datastore.Get(context, vocabKey, &v)
+
+	if err != nil {
 		log.Errorf(context, "%v", err)
-	}
-}
-
-func handleAddVocab(w http.ResponseWriter, r *http.Request) {
-
-	if r.Method != "POST" {
-		http.Error(w, "POST requests only", http.StatusMethodNotAllowed)
+		c.String(http.StatusInternalServerError, "error")
 		return
 	}
-	context := appengine.NewContext(r)
+
+	message := "word is " + word + " " + v.Phonetics
+
+	c.String(http.StatusOK, message)
+}
+
+func addNewVocab(c *gin.Context) {
+
+	context := appengine.NewContext(c.Request)
 
 	vocab := &Vocab{
-		Word:       r.FormValue("word"),
-		Phonetics:  r.FormValue("phonetics"),
-		Definition: r.FormValue("definition"),
+		Word:       "first",        //c.PostForm("word"),
+		Phonetics:  "/first/",      //c.PostForm("phonetics"),
+		Definition: "def of first", //c.PostForm("definition"),
 	}
 
-	key := datastore.NewIncompleteKey(context, "Vocab", nil)
+	key := datastore.NewKey(context, "Vocab", vocab.Word, 0, nil)
 	if _, err := datastore.Put(context, key, vocab); err != nil {
 		// Handle err
 		log.Errorf(context, "%v", err)
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		c.String(http.StatusInternalServerError, "error="+err.Error())
 		return
 	}
 
 	// Redirect with 303 which causes the subsequent request to use GET.
 	//http.Redirect(w, r, "/", http.StatusSeeOther)
+
+	c.String(http.StatusOK, "Word '"+vocab.Word+"' added")
 }
