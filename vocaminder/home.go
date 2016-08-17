@@ -1,7 +1,7 @@
 package vocaminder
 
 import (
-	"fmt"
+	"encoding/json"
 	"html/template"
 	"net/http"
 
@@ -91,28 +91,50 @@ func handleNewVocab(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// Response is following the [JSend convention](https://labs.omniti.com/labs/jsend)
+type Response struct {
+	Status string      `json:"status"`
+	Data   interface{} `json:"data"`
+}
+
 func getVocabID(c *gin.Context) {
 	word := c.Param("word")
 
-	fmt.Println("word", word)
-
 	context := appengine.NewContext(c.Request)
 
-	vocabKey := datastore.NewKey(context, "Vocab", "first", 0, nil)
+	vocabKey := datastore.NewKey(context, "Vocab", word, 0, nil)
 
 	var v Vocab
 
 	err := datastore.Get(context, vocabKey, &v)
 
 	if err != nil {
+
+		r := &Response{
+			Status: "fail",
+			Data: map[string]string{
+				"title": "Word ''" + word + "'' not found",
+				"error": err.Error(),
+			},
+		}
+		jsonResponse, _ := json.Marshal(r)
+
 		log.Errorf(context, "%v", err)
-		c.String(http.StatusInternalServerError, "error")
+
+		c.String(http.StatusBadRequest, string(jsonResponse))
 		return
 	}
 
-	message := "word is " + word + " " + v.Phonetics
+	r := &Response{
+		Status: "success",
+		Data: map[string]string{
+			"word": word,
+			"id":   "1",
+		},
+	}
+	jsonResponse, _ := json.Marshal(r)
 
-	c.String(http.StatusOK, message)
+	c.String(http.StatusOK, string(jsonResponse))
 }
 
 func addNewVocab(c *gin.Context) {
