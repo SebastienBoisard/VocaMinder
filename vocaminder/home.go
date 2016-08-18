@@ -20,6 +20,16 @@ type Vocab struct {
 	Audio      string
 }
 
+// Scores contains all the scores of a user for a word
+type Scores struct {
+	User    string
+	Word    string
+	Results []struct {
+		Date  int
+		Score int
+	}
+}
+
 var tpl = template.Must(template.ParseGlob("vocaminder/templates/*.html"))
 
 // init is called before the application starts.
@@ -125,11 +135,37 @@ func addNewVocab(c *gin.Context) {
 		Audio:      c.PostForm("audio"),
 	}
 
+	scores := &Scores{
+		User: "seb",
+		Word: c.PostForm("word"),
+		Results: []struct {
+			Date  int
+			Score int
+		}{
+			{
+				Date:  20160810,
+				Score: 2,
+			},
+			{
+				Date:  20160819,
+				Score: 1,
+			},
+		},
+	}
+
 	key := datastore.NewKey(context, "Vocab", vocab.Word, 0, nil)
 	if _, err := datastore.Put(context, key, vocab); err != nil {
 		// Handle err
 		log.Errorf(context, "%v", err)
 		sendFailResponse(c, "Can't add new vocab")
+		return
+	}
+
+	keyScores := datastore.NewKey(context, "Scores", scores.Word, 0, nil)
+	if _, err := datastore.Put(context, keyScores, scores); err != nil {
+		// Handle err
+		log.Errorf(context, "%v", err)
+		sendFailResponse(c, "Can't add score")
 		return
 	}
 
