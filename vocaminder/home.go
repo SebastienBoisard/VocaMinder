@@ -1,7 +1,6 @@
 package vocaminder
 
 import (
-	"encoding/json"
 	"html/template"
 	"net/http"
 
@@ -109,16 +108,11 @@ func getVocabID(c *gin.Context) {
 		return
 	}
 
-	r := &Response{
-		Status: "success",
-		Data: map[string]string{
-			"word": word,
-			"id":   "1",
-		},
+	response := map[string]string{
+		"id": v.Word,
 	}
-	jsonResponse, _ := json.Marshal(r)
 
-	c.String(http.StatusOK, string(jsonResponse))
+	sendSuccessResponse(c, response)
 }
 
 func addNewVocab(c *gin.Context) {
@@ -142,5 +136,9 @@ func addNewVocab(c *gin.Context) {
 	// Redirect with 303 which causes the subsequent request to use GET.
 	//http.Redirect(w, r, "/", http.StatusSeeOther)
 
-	c.String(http.StatusOK, "Word '"+vocab.Word+"' added")
+	response := map[string]string{
+		"message": "word '" + vocab.Word + "' added to the database",
+	}
+
+	sendSuccessResponse(c, response)
 }

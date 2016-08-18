@@ -25,3 +25,14 @@ func sendFailResponse(c *gin.Context, message string) {
 
 	c.String(http.StatusBadRequest, string(jsonResponse))
 }
+
+func sendSuccessResponse(c *gin.Context, data interface{}) {
+
+	r := &Response{
+		Status: "success",
+		Data:   data,
+	}
+	jsonResponse, _ := json.Marshal(r)
+
+	c.String(http.StatusOK, string(jsonResponse))
+}
