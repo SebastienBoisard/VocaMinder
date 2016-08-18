@@ -91,12 +91,6 @@ func handleNewVocab(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// Response is following the [JSend convention](https://labs.omniti.com/labs/jsend)
-type Response struct {
-	Status string      `json:"status"`
-	Data   interface{} `json:"data"`
-}
-
 func getVocabID(c *gin.Context) {
 
 	word := c.Param("word")
@@ -110,19 +104,8 @@ func getVocabID(c *gin.Context) {
 	err := datastore.Get(context, vocabKey, &v)
 
 	if err != nil {
-
-		r := &Response{
-			Status: "fail",
-			Data: map[string]string{
-				"title": "Word ''" + word + "'' not found",
-				"error": err.Error(),
-			},
-		}
-		jsonResponse, _ := json.Marshal(r)
-
 		log.Errorf(context, "%v", err)
-
-		c.String(http.StatusBadRequest, string(jsonResponse))
+		sendFailResponse(c, "Word ''"+word+"'' not found")
 		return
 	}
 
@@ -139,14 +122,6 @@ func getVocabID(c *gin.Context) {
 }
 
 func addNewVocab(c *gin.Context) {
-	/*
-		word := c.PostForm("word")
-		phonetics := c.PostForm("phonetics")
-		definition := c.PostForm("definition")
-		audio := c.PostForm("audio")
-		examples := c.PostForm("examples")
-	*/
-
 	context := appengine.NewContext(c.Request)
 
 	vocab := &Vocab{
@@ -160,7 +135,7 @@ func addNewVocab(c *gin.Context) {
 	if _, err := datastore.Put(context, key, vocab); err != nil {
 		// Handle err
 		log.Errorf(context, "%v", err)
-		c.String(http.StatusInternalServerError, "error="+err.Error())
+		sendFailResponse(c, "Can't add new vocab")
 		return
 	}
 
