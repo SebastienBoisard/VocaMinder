@@ -10,5 +10,5 @@ handlers:
      upload: favicon.ico
    # Main app.  All the real work is here.
    - url: /.*
-     login: required
+     #login: required
      script: _go_app

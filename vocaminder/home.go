@@ -13,12 +13,12 @@ import (
 	"google.golang.org/appengine/user"
 )
 
-// Vocab is a structure for a word
+// Vocab is a structure containing the card data about a word
 type Vocab struct {
-	//	id         int
 	Word       string
 	Phonetics  string
 	Definition string
+	Audio      string
 }
 
 var tpl = template.Must(template.ParseGlob("vocaminder/templates/*.html"))
@@ -38,7 +38,7 @@ func init() {
 	})
 
 	r.GET("/vocab/id/:word", getVocabID)
-	r.GET("/vocab/new", addNewVocab)
+	r.POST("/vocab/new", addNewVocab)
 
 	// Handle all requests using net/http
 	http.Handle("/", r)
@@ -98,6 +98,7 @@ type Response struct {
 }
 
 func getVocabID(c *gin.Context) {
+
 	word := c.Param("word")
 
 	context := appengine.NewContext(c.Request)
@@ -138,13 +139,21 @@ func getVocabID(c *gin.Context) {
 }
 
 func addNewVocab(c *gin.Context) {
+	/*
+		word := c.PostForm("word")
+		phonetics := c.PostForm("phonetics")
+		definition := c.PostForm("definition")
+		audio := c.PostForm("audio")
+		examples := c.PostForm("examples")
+	*/
 
 	context := appengine.NewContext(c.Request)
 
 	vocab := &Vocab{
-		Word:       "first",        //c.PostForm("word"),
-		Phonetics:  "/first/",      //c.PostForm("phonetics"),
-		Definition: "def of first", //c.PostForm("definition"),
+		Word:       c.PostForm("word"),
+		Phonetics:  c.PostForm("phonetics"),
+		Definition: c.PostForm("definition"),
+		Audio:      c.PostForm("audio"),
 	}
 
 	key := datastore.NewKey(context, "Vocab", vocab.Word, 0, nil)
