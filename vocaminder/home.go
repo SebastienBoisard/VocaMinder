@@ -3,6 +3,7 @@ package vocaminder
 import (
 	"html/template"
 	"net/http"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 
@@ -48,6 +49,7 @@ func init() {
 
 	r.GET("/vocab/id/:word", getVocabID)
 	r.POST("/vocab/new", addNewVocab)
+	r.POST("/score/new", setVocabScore)
 
 	// Handle all requests using net/http
 	http.Handle("/", r)
@@ -174,6 +176,49 @@ func addNewVocab(c *gin.Context) {
 
 	response := map[string]string{
 		"message": "word '" + vocab.Word + "' added to the database",
+	}
+
+	sendSuccessResponse(c, response)
+}
+
+func setVocabScore(c *gin.Context) {
+	context := appengine.NewContext(c.Request)
+	log.Errorf(context, "setVocabScore")
+
+	word := c.PostForm("word")
+	newScore, _ := strconv.Atoi(c.PostForm("score"))
+
+	keyScore := datastore.NewKey(context, "Scores", word, 0, nil)
+
+	var s Scores
+
+	err := datastore.Get(context, keyScore, &s)
+
+	if err != nil {
+		log.Errorf(context, "%v", err)
+		sendFailResponse(c, "Score for word ''"+word+"'' not found")
+		return
+	}
+	log.Errorf(context, "setVocabScore", s)
+
+	s.Results = append(s.Results, struct {
+		Date  int
+		Score int
+	}{
+		Date:  20160819,
+		Score: newScore,
+	})
+
+	log.Errorf(context, "setVocabScore", s)
+	if _, err := datastore.Put(context, keyScore, &s); err != nil {
+		// Handle err
+		log.Errorf(context, "%v", err)
+		sendFailResponse(c, "Can't add score")
+		return
+	}
+
+	response := map[string]string{
+		"message": "new score for word '" + word + "' added to the database",
 	}
 
 	sendSuccessResponse(c, response)
