@@ -31,8 +31,8 @@ func addScore(c *gin.Context) {
 		}{},
 	}
 
-	keyScores := datastore.NewKey(context, "Scores", scores.Word, 0, nil)
-	if _, err := datastore.Put(context, keyScores, scores); err != nil {
+	scoreKey := datastore.NewKey(context, "Scores", scores.Word, 0, nil)
+	if _, err := datastore.Put(context, scoreKey, scores); err != nil {
 		// Handle err
 		log.Errorf(context, "%v", err)
 		sendFailResponse(c, "Can't add score for word '"+scores.Word+"'")
@@ -91,4 +91,24 @@ func updateScore(c *gin.Context) {
 	}
 
 	sendSuccessResponse(c, response)
+}
+
+func getScore(c *gin.Context) {
+
+	context := appengine.NewContext(c.Request)
+
+	word := c.Param("word")
+
+	var s Scores
+
+	scoreKey := datastore.NewKey(context, "Scores", word, 0, nil)
+
+	err := datastore.Get(context, scoreKey, &s)
+	if err != nil {
+		log.Errorf(context, "%v", err)
+		sendFailResponse(c, "Score of word ''"+word+"'' not found")
+		return
+	}
+
+	sendSuccessResponse(c, s)
 }

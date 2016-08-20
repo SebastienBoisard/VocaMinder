@@ -31,6 +31,7 @@ func init() {
 
 	r.POST("/scores", addScore)
 	r.PUT("/scores", updateScore)
+	r.GET("/scores/:word", getScore)
 
 	// Handle all requests using net/http
 	http.Handle("/", r)

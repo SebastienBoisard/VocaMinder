@@ -94,12 +94,11 @@ func getVocab(c *gin.Context) {
 
 	word := c.Param("word")
 
-	vocabKey := datastore.NewKey(context, "Vocab", word, 0, nil)
-
 	var v Vocab
 
-	err := datastore.Get(context, vocabKey, &v)
+	vocabKey := datastore.NewKey(context, "Vocab", word, 0, nil)
 
+	err := datastore.Get(context, vocabKey, &v)
 	if err != nil {
 		log.Errorf(context, "%v", err)
 		sendFailResponse(c, "Word ''"+word+"'' not found")
