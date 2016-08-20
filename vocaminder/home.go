@@ -37,6 +37,7 @@ func init() {
 
 	r.POST("/vocab", addVocab)
 	r.PUT("/vocab", updateVocab)
+	r.DELETE("/vocab/:word", deleteVocab)
 
 	r.GET("/vocab/id/:word", getVocabID)
 	r.POST("/score/new", setVocabScore)

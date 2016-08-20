@@ -16,6 +16,7 @@ type Vocab struct {
 }
 
 func addVocab(c *gin.Context) {
+
 	context := appengine.NewContext(c.Request)
 
 	vocab := &Vocab{
@@ -57,6 +58,7 @@ func addVocab(c *gin.Context) {
 }
 
 func updateVocab(c *gin.Context) {
+
 	context := appengine.NewContext(c.Request)
 
 	vocab := &Vocab{
@@ -76,6 +78,27 @@ func updateVocab(c *gin.Context) {
 
 	response := map[string]string{
 		"message": "word '" + vocab.Word + "' updated in the datastore",
+	}
+
+	sendSuccessResponse(c, response)
+}
+
+func deleteVocab(c *gin.Context) {
+
+	context := appengine.NewContext(c.Request)
+
+	word := c.Param("word")
+
+	key := datastore.NewKey(context, "Vocab", word, 0, nil)
+	if err := datastore.Delete(context, key); err != nil {
+		// Handle err
+		log.Errorf(context, "%v", err)
+		sendFailResponse(c, "Can't delete vocab '"+word+"''")
+		return
+	}
+
+	response := map[string]string{
+		"message": "word '" + word + "' removed from the datastore",
 	}
 
 	sendSuccessResponse(c, response)
