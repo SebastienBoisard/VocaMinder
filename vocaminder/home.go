@@ -38,8 +38,8 @@ func init() {
 	r.POST("/vocab", addVocab)
 	r.PUT("/vocab", updateVocab)
 	r.DELETE("/vocab/:word", deleteVocab)
+	r.GET("/vocab/:word", getVocab)
 
-	r.GET("/vocab/id/:word", getVocabID)
 	r.POST("/score/new", setVocabScore)
 
 	// Handle all requests using net/http
@@ -91,31 +91,6 @@ func handleNewVocab(w http.ResponseWriter, r *http.Request) {
 	if err := tpl.ExecuteTemplate(w, "add_vocab.html", nil); err != nil {
 		log.Errorf(context, "%v", err)
 	}
-}
-
-func getVocabID(c *gin.Context) {
-
-	word := c.Param("word")
-
-	context := appengine.NewContext(c.Request)
-
-	vocabKey := datastore.NewKey(context, "Vocab", word, 0, nil)
-
-	var v Vocab
-
-	err := datastore.Get(context, vocabKey, &v)
-
-	if err != nil {
-		log.Errorf(context, "%v", err)
-		sendFailResponse(c, "Word ''"+word+"'' not found")
-		return
-	}
-
-	response := map[string]string{
-		"id": v.Word,
-	}
-
-	sendSuccessResponse(c, response)
 }
 
 func setVocabScore(c *gin.Context) {

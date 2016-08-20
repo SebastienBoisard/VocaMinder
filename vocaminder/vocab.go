@@ -103,3 +103,24 @@ func deleteVocab(c *gin.Context) {
 
 	sendSuccessResponse(c, response)
 }
+
+func getVocab(c *gin.Context) {
+
+	context := appengine.NewContext(c.Request)
+
+	word := c.Param("word")
+
+	vocabKey := datastore.NewKey(context, "Vocab", word, 0, nil)
+
+	var v Vocab
+
+	err := datastore.Get(context, vocabKey, &v)
+
+	if err != nil {
+		log.Errorf(context, "%v", err)
+		sendFailResponse(c, "Word ''"+word+"'' not found")
+		return
+	}
+
+	sendSuccessResponse(c, v)
+}
