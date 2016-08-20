@@ -3,24 +3,13 @@ package vocaminder
 import (
 	"html/template"
 	"net/http"
-	"strconv"
 
 	"github.com/gin-gonic/gin"
 
 	"google.golang.org/appengine"
-	"google.golang.org/appengine/datastore"
 	"google.golang.org/appengine/log"
 	"google.golang.org/appengine/user"
 )
-
-// Scores contains all the scores of a user for a word
-type Scores struct {
-	Word    string
-	Results []struct {
-		Date  int
-		Score int
-	}
-}
 
 var tpl = template.Must(template.ParseGlob("vocaminder/templates/*.html"))
 
@@ -40,7 +29,7 @@ func init() {
 	r.DELETE("/vocab/:word", deleteVocab)
 	r.GET("/vocab/:word", getVocab)
 
-	r.POST("/score/new", setVocabScore)
+	r.PUT("/scores", updateScore)
 
 	// Handle all requests using net/http
 	http.Handle("/", r)
@@ -91,54 +80,4 @@ func handleNewVocab(w http.ResponseWriter, r *http.Request) {
 	if err := tpl.ExecuteTemplate(w, "add_vocab.html", nil); err != nil {
 		log.Errorf(context, "%v", err)
 	}
-}
-
-func setVocabScore(c *gin.Context) {
-	context := appengine.NewContext(c.Request)
-	log.Errorf(context, "setVocabScore")
-
-	// @TODO: get the user id
-	// u := user.Current(context)
-	// u.ID or u.ClientID
-	// https://cloud.google.com/appengine/docs/go/users/reference#Current
-	// https://cloud.google.com/appengine/docs/go/users/
-	// @TODO: make a query to find a score with key=word and user=u.ID
-
-	word := c.PostForm("word")
-	newScore, _ := strconv.Atoi(c.PostForm("score"))
-
-	keyScore := datastore.NewKey(context, "Scores", word, 0, nil)
-
-	var s Scores
-
-	err := datastore.Get(context, keyScore, &s)
-
-	if err != nil {
-		log.Errorf(context, "%v", err)
-		sendFailResponse(c, "Score for word ''"+word+"'' not found")
-		return
-	}
-	log.Errorf(context, "setVocabScore", s)
-
-	s.Results = append(s.Results, struct {
-		Date  int
-		Score int
-	}{
-		Date:  20160819,
-		Score: newScore,
-	})
-
-	log.Errorf(context, "setVocabScore", s)
-	if _, err := datastore.Put(context, keyScore, &s); err != nil {
-		// Handle err
-		log.Errorf(context, "%v", err)
-		sendFailResponse(c, "Can't add score")
-		return
-	}
-
-	response := map[string]string{
-		"message": "new score for word '" + word + "' added to the database",
-	}
-
-	sendSuccessResponse(c, response)
 }
