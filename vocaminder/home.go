@@ -29,6 +29,7 @@ func init() {
 	r.DELETE("/vocab/:word", deleteVocab)
 	r.GET("/vocab/:word", getVocab)
 
+	r.POST("/scores", addScore)
 	r.PUT("/scores", updateScore)
 
 	// Handle all requests using net/http

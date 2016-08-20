@@ -26,27 +26,11 @@ func addVocab(c *gin.Context) {
 		Audio:      c.PostForm("audio"),
 	}
 
-	scores := &Scores{
-		Word: c.PostForm("word"),
-		Results: []struct {
-			Date  int
-			Score int
-		}{},
-	}
-
-	key := datastore.NewKey(context, "Vocab", vocab.Word, 0, nil)
-	if _, err := datastore.Put(context, key, vocab); err != nil {
+	keyVocab := datastore.NewKey(context, "Vocab", vocab.Word, 0, nil)
+	if _, err := datastore.Put(context, keyVocab, vocab); err != nil {
 		// Handle err
 		log.Errorf(context, "%v", err)
 		sendFailResponse(c, "Can't add new vocab")
-		return
-	}
-
-	keyScores := datastore.NewKey(context, "Score", scores.Word, 0, nil)
-	if _, err := datastore.Put(context, keyScores, scores); err != nil {
-		// Handle err
-		log.Errorf(context, "%v", err)
-		sendFailResponse(c, "Can't add score")
 		return
 	}
 
