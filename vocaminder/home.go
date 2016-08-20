@@ -13,17 +13,8 @@ import (
 	"google.golang.org/appengine/user"
 )
 
-// Vocab is a structure containing the card data about a word
-type Vocab struct {
-	Word       string
-	Phonetics  string
-	Definition string
-	Audio      string
-}
-
 // Scores contains all the scores of a user for a word
 type Scores struct {
-	User    string
 	Word    string
 	Results []struct {
 		Date  int
@@ -43,12 +34,11 @@ func init() {
 	r.GET("/", func(c *gin.Context) {
 		c.String(200, "Hello World!")
 	})
-	r.GET("/ping", func(c *gin.Context) {
-		c.String(200, "pong")
-	})
+
+	r.POST("/vocab", addVocab)
+	r.PUT("/vocab", updateVocab)
 
 	r.GET("/vocab/id/:word", getVocabID)
-	r.POST("/vocab/new", addNewVocab)
 	r.POST("/score/new", setVocabScore)
 
 	// Handle all requests using net/http
@@ -127,63 +117,16 @@ func getVocabID(c *gin.Context) {
 	sendSuccessResponse(c, response)
 }
 
-func addNewVocab(c *gin.Context) {
-	context := appengine.NewContext(c.Request)
-
-	vocab := &Vocab{
-		Word:       c.PostForm("word"),
-		Phonetics:  c.PostForm("phonetics"),
-		Definition: c.PostForm("definition"),
-		Audio:      c.PostForm("audio"),
-	}
-
-	scores := &Scores{
-		User: "seb",
-		Word: c.PostForm("word"),
-		Results: []struct {
-			Date  int
-			Score int
-		}{
-			{
-				Date:  20160810,
-				Score: 2,
-			},
-			{
-				Date:  20160819,
-				Score: 1,
-			},
-		},
-	}
-
-	key := datastore.NewKey(context, "Vocab", vocab.Word, 0, nil)
-	if _, err := datastore.Put(context, key, vocab); err != nil {
-		// Handle err
-		log.Errorf(context, "%v", err)
-		sendFailResponse(c, "Can't add new vocab")
-		return
-	}
-
-	keyScores := datastore.NewKey(context, "Scores", scores.Word, 0, nil)
-	if _, err := datastore.Put(context, keyScores, scores); err != nil {
-		// Handle err
-		log.Errorf(context, "%v", err)
-		sendFailResponse(c, "Can't add score")
-		return
-	}
-
-	// Redirect with 303 which causes the subsequent request to use GET.
-	//http.Redirect(w, r, "/", http.StatusSeeOther)
-
-	response := map[string]string{
-		"message": "word '" + vocab.Word + "' added to the database",
-	}
-
-	sendSuccessResponse(c, response)
-}
-
 func setVocabScore(c *gin.Context) {
 	context := appengine.NewContext(c.Request)
 	log.Errorf(context, "setVocabScore")
+
+	// @TODO: get the user id
+	// u := user.Current(context)
+	// u.ID or u.ClientID
+	// https://cloud.google.com/appengine/docs/go/users/reference#Current
+	// https://cloud.google.com/appengine/docs/go/users/
+	// @TODO: make a query to find a score with key=word and user=u.ID
 
 	word := c.PostForm("word")
 	newScore, _ := strconv.Atoi(c.PostForm("score"))
