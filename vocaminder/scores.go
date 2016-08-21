@@ -19,6 +19,13 @@ type Scores struct {
 	}
 }
 
+const (
+	noScore     = 0
+	badScore    = 1
+	almostScore = 2
+	goodScore   = 3
+)
+
 func addScore(c *gin.Context) {
 
 	context := appengine.NewContext(c.Request)
