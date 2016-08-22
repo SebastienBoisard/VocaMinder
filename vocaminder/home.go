@@ -38,6 +38,7 @@ func init() {
 
 	r.POST("/admin/datastore/data", loadData)
 	r.DELETE("/admin/datastore/data", deleteData)
+	r.GET("/admin/datastore/data", downloadData)
 
 	// Handle all requests using net/http
 	http.Handle("/", r)

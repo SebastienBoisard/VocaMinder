@@ -57,3 +57,19 @@ func deleteData(c *gin.Context) {
 
 	sendSuccessResponse(c, "all the vocabs were deleted")
 }
+
+func downloadData(c *gin.Context) {
+
+	context := appengine.NewContext(c.Request)
+
+	q := datastore.NewQuery("Vocab")
+	var allVocab []Vocab
+	_, err := q.GetAll(context, &allVocab)
+
+	if err != nil {
+		log.Errorf(context, "%v", err)
+		sendFailResponse(c, "Error while downloading all the vocabs")
+		return
+	}
+	sendSuccessResponse(c, allVocab)
+}
