@@ -42,9 +42,9 @@ func deleteData(c *gin.Context) {
 
 	context := appengine.NewContext(c.Request)
 
-	q := datastore.NewQuery("Vocab")
+	q1 := datastore.NewQuery("Vocab")
 	var allVocabs []Vocab
-	keys, err := q.GetAll(context, &allVocabs)
+	keys, err := q1.GetAll(context, &allVocabs)
 
 	for _, key := range keys {
 		if err = datastore.Delete(context, key); err != nil {
@@ -55,7 +55,20 @@ func deleteData(c *gin.Context) {
 		}
 	}
 
-	sendSuccessResponse(c, "all the vocabs were deleted")
+	q2 := datastore.NewQuery("Scores")
+	var allScores []Scores
+	keys, err = q2.GetAll(context, &allScores)
+
+	for _, key := range keys {
+		if err = datastore.Delete(context, key); err != nil {
+			// Handle err
+			log.Errorf(context, "%v", err)
+			sendFailResponse(c, "Can't delete score key="+key.Encode())
+			return
+		}
+	}
+
+	sendSuccessResponse(c, "all the data from the datastore were deleted")
 }
 
 func downloadData(c *gin.Context) {
