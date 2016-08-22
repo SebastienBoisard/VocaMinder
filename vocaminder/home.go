@@ -36,6 +36,9 @@ func init() {
 	r.GET("/card/init", initCard)
 	r.GET("/card", getCard)
 
+	r.POST("/admin/datastore/data", loadData)
+	r.DELETE("/admin/datastore/data", deleteData)
+
 	// Handle all requests using net/http
 	http.Handle("/", r)
 }

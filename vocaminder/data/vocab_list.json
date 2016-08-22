@@ -1,0 +1,23 @@
+   [
+      {
+         "Word": "second",
+         "Phonetics": "ˈsekənd",
+         "Definition": "happening or coming next after the first in a series of similar things or people",
+         "Audio": "/s/sec/secon/second__us_1.mp3",
+         "Examples": "This is the second time it's happened.\nItaly scored a second goal just after half-time.\nThe second of June/June 2nd\nHe was the second to arrive.\nWe have one child and are expecting our second in July."
+      },
+      {
+         "Word": "integer",
+         "Phonetics": "ˈɪntɪdʒər",
+         "Definition": "a whole number, such as 3 or 4 but not 3.5",
+         "Audio": "/i/int/integ/integer__us_1.mp3",
+         "Examples": "Enter any positive integer between 0 and 255."
+      },
+      {
+         "Word": "trial",
+         "Phonetics": "ˈtraɪəl",
+         "Definition": "a formal examination of evidence in court by a judge and often a jury, to decide if somebody accused of a crime is guilty or not",
+         "Audio": "/i/int/integ/integer__us_1.mp3",
+         "Examples": "A murder trial.\nHe's on trial for murder.\nShe will stand trial/go on trial for fraud.\nThe men were arrested but not brought to trial.\nThe case never came to trial.\nShe is awaiting trial on corruption charges.\nHe did not receive a fair trial.\nShe was detained without trial.\nParker was committed for trial yesterday at Southwark Crown Court."
+      }
+   ]

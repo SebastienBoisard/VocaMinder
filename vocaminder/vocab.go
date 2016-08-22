@@ -13,6 +13,7 @@ type Vocab struct {
 	Phonetics  string
 	Definition string
 	Audio      string
+	Examples   string
 }
 
 func addVocab(c *gin.Context) {
