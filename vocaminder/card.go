@@ -1,6 +1,8 @@
 package vocaminder
 
 import (
+	"time"
+
 	"github.com/gin-gonic/gin"
 	"google.golang.org/appengine"
 	"google.golang.org/appengine/datastore"
@@ -71,18 +73,18 @@ func initCard(c *gin.Context) {
 			continue
 		}
 
-		interval := score.Results[nbResults-1].Date - score.Results[nbResults-2].Date
+		intervalDuration := score.Results[nbResults-1].Date.Sub(score.Results[nbResults-2].Date)
 
-		if interval == 1 {
+		if intervalDuration.Hours() < 25.0 {
 			repeatCards = append(repeatCards, Card{
 				Word: score.Word,
 			})
 			continue
 		}
 
-		now := 1
+		now := time.Now()
 
-		if score.Results[nbResults-1].Date+interval+1 > now {
+		if now.After(score.Results[nbResults-1].Date.Add(intervalDuration).AddDate(0, 0, 1)) == true {
 			continue
 		}
 

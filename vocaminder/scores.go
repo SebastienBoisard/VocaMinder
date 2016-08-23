@@ -14,7 +14,7 @@ import (
 type Scores struct {
 	Word    string
 	Results []struct {
-		Date  int
+		Date  time.Time
 		Score int
 	}
 }
@@ -33,7 +33,7 @@ func addScore(c *gin.Context) {
 	scores := &Scores{
 		Word: c.PostForm("word"),
 		Results: []struct {
-			Date  int
+			Date  time.Time
 			Score int
 		}{},
 	}
@@ -73,16 +73,11 @@ func updateScore(c *gin.Context) {
 		return
 	}
 
-	// Get the current time
-	t := time.Now()
-	// Store the date of this score as an integer as YYYYMMDDHH
-	currentDate, _ := strconv.Atoi(t.Format("2006010215"))
-
 	s.Results = append(s.Results, struct {
-		Date  int
+		Date  time.Time
 		Score int
 	}{
-		Date:  currentDate,
+		Date:  time.Now(),
 		Score: newScore,
 	})
 
