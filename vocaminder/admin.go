@@ -3,6 +3,7 @@ package vocaminder
 import (
 	"encoding/json"
 	"io/ioutil"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"google.golang.org/appengine"
@@ -33,6 +34,28 @@ func loadData(c *gin.Context) {
 			sendFailResponse(c, "Can't add new vocab")
 			return
 		}
+
+		s := &Scores{
+			Word: vocab.Word,
+			Results: []struct {
+				Date  time.Time
+				Score int
+			}{},
+		}
+
+		scoreKey := datastore.NewKey(context, "Scores", vocab.Word, 0, nil)
+
+		if err := datastore.Get(context, scoreKey, s); err != nil {
+			log.Debugf(context, "Scores for %s doesn't exist", s.Word)
+			if _, err := datastore.Put(context, scoreKey, s); err != nil {
+				// Handle err
+				log.Errorf(context, "%v", err)
+				sendFailResponse(c, "Can't add score for word '"+s.Word+"'")
+				return
+			}
+		}
+		log.Debugf(context, "Scores for %s exists", s.Word)
+
 	}
 
 	sendSuccessResponse(c, vocabList)
