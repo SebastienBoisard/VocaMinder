@@ -2,6 +2,7 @@ package vocaminder
 
 import (
 	"math/rand"
+	"strconv"
 	"time"
 
 	"golang.org/x/net/context"
@@ -17,8 +18,8 @@ const maxCards = 30
 // Card contains the data of a card to learn
 type Card struct {
 	Word    string
-	score   int
-	learned bool
+	Score   int
+	Learned bool
 }
 
 // Cards stores all the cards that had to be learned
@@ -159,11 +160,67 @@ func getCard(c *gin.Context) {
 	for i := 0; i < len(cs.CardList); i++ {
 		idx := randGenerator.Intn(len(cs.CardList))
 		cd := cs.CardList[idx]
-		if cd.learned == false {
+		if cd.Learned == false {
 			sendSuccessResponse(c, cd)
 			return
 		}
 	}
 
 	sendFailResponse(c, "No more card to learn")
+}
+
+func updateCard(c *gin.Context) {
+
+	context := appengine.NewContext(c.Request)
+
+	word := c.PostForm("word")
+	if word == "" {
+		log.Errorf(context, "No word found in input")
+		sendFailResponse(c, "No word found in input")
+		return
+	}
+
+	cardsKey := datastore.NewKey(context, "Cards", "cards", 0, nil)
+
+	var cs Cards
+
+	err := datastore.Get(context, cardsKey, &cs)
+	if err != nil {
+		log.Errorf(context, "Cards data not found %v", err)
+		sendFailResponse(c, "Can't find Cards")
+		return
+	}
+
+	// @TODO: replace the slice by a map
+
+	isCardsModified := false
+	for index, card := range cs.CardList {
+		if card.Word == word {
+			cs.CardList[index].Score, err = strconv.Atoi(c.PostForm("score"))
+			log.Debugf(context, "card[%s].Score=%d", card.Word, card.Score)
+			if cs.CardList[index].Score == goodScore {
+				cs.CardList[index].Learned = true
+			}
+			isCardsModified = true
+			break
+		}
+	}
+
+	if isCardsModified == false {
+		log.Errorf(context, "Card not found: %v", err)
+		sendFailResponse(c, "Card not found")
+		return
+	}
+
+	log.Debugf(context, "Cards= %v", cs)
+
+	cardsKey = datastore.NewKey(context, "Cards", "cards", 0, nil)
+	if _, err = datastore.Put(context, cardsKey, &cs); err != nil {
+		// Handle err
+		log.Errorf(context, "Erro while storing Cards: %v", err)
+		sendFailResponse(c, "Can't store cards")
+		return
+	}
+
+	sendSuccessResponse(c, "Cards updated")
 }
