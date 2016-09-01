@@ -33,7 +33,6 @@ func init() {
 	r.PUT("/scores", updateScore)
 	r.GET("/scores/:word", getScore)
 
-	r.GET("/card/init", initCard)
 	r.GET("/card", getCard)
 
 	r.POST("/admin/datastore/data", loadData)
